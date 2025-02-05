@@ -21,7 +21,7 @@ df = load_data()
 
 
 # Sidebar Navigation
-menu = st.selectbox("Menu:", ["📊 Dashboard", "🔮 Prediksi SARIMA", "📌 Rekomendasi Produk", "🤝 Analisis Asosiasi"])
+menu = st.selectbox("Menu:", ["📊 Dashboard", "🔮 Prediksi SARIMA", "📌 Rekomendasi Produk", "🤝 Sistem Rekomendasi Produk Kopi"])
 
 #######==================================DASHBOARD=======================================================
 
