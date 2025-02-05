@@ -276,7 +276,7 @@ elif menu == "📌 Rekomendasi Produk":
     for _, row in sorted_product_detail.tail(3).iterrows():
         st.write(f"📦 *{row['product_detail']}* - {row['transaction_qty']} terjual")
 
-elif menu == "🤝 Sistem Rekomendasi Produk":
+elif menu == "🤝 Sistem Rekomendasi Produk Kopi":
     st.title("🤝 Sistem Rekomendasi Produk dengan Apriori")
     
     @st.cache_data
