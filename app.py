@@ -11,7 +11,7 @@ from mlxtend.frequent_patterns import apriori, association_rules
 
 st.set_page_config(page_title="Coffee Shop Sales Dashboard", layout="wide")
 # Load Data (hanya sekali)
-@st.cache
+@st.cache_data
 def load_data():
     df = pd.read_excel("Coffee Shop Sales.xlsx")
     df['transaction_date'] = pd.to_datetime(df['transaction_date'])
@@ -28,7 +28,7 @@ menu = st.selectbox("Menu:", ["📊 Dashboard", "🔮 Prediksi SARIMA", "📌 Re
 if menu == "📊 Dashboard":
     st.title("☕ Coffee Shop Sales Dashboard ☕")
     image = Image.open('coffe.jpg')
-    st.image(image, use_column_width=True)
+    st.image(image, use_container_width=True)
 
     # Filter lokasi
     locations = df['store_location'].unique()
@@ -279,7 +279,7 @@ elif menu == "📌 Rekomendasi Produk":
 elif menu == "🤝 Analisis Asosiasi":
     st.title("🤝 Analisis Asosiasi dengan Apriori")
     
-    @st.cache
+    @st.cache_data
     def load_assoc_data():
         df = pd.read_excel('dataset_astoria_updated.xlsx')
         df.dropna(subset=['new_invoice_id'], inplace=True)
