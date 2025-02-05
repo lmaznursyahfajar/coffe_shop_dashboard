@@ -44,7 +44,7 @@ st.markdown("""
 
 # Gambar header
 image = Image.open('coffe.jpg')
-st.image(image, use_column_width=True, caption="Coffee Shop Dashboard")
+st.image(image, use_container_width=True, caption="Coffee Shop Dashboard")
 
 # Judul utama
 st.markdown('<div class="title-header">☕ Coffee Shop Interactive Sales Dashboard ☕</div>', unsafe_allow_html=True)
@@ -327,7 +327,7 @@ import streamlit as st
 from mlxtend.frequent_patterns import apriori, association_rules
 
 # Fungsi untuk memuat dataset dengan caching
-@st.cache
+@st.cache_data
 def load_data():
     try:
         df = pd.read_excel('dataset_astoria_updated.xlsx')
