@@ -304,11 +304,6 @@ elif menu == "🤝 Sistem Rekomendasi Produk Kopi":
         st.subheader("📌 Aturan Asosiasi Terbentuk")
         st.dataframe(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']])
 
-        # Visualisasi lift score dengan Bar Chart
-        st.subheader("📊 Lift Score Aturan Asosiasi")
-        fig_bar = px.bar(rules, x='lift', y=rules.index, orientation='h', title="Lift Score dari Aturan Asosiasi", color='lift', text='lift')
-        st.plotly_chart(fig_bar, use_container_width=True)
-
     # ============================= SISTEM REKOMENDASI =============================
     st.subheader("🎯 Rekomendasi Produk")
 
