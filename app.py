@@ -11,7 +11,7 @@ from mlxtend.frequent_patterns import apriori, association_rules
 
 st.set_page_config(page_title="Coffee Shop Sales Dashboard", layout="wide")
 # Load Data (hanya sekali)
-@st.cache_data
+@st.cache
 def load_data():
     df = pd.read_excel("Coffee Shop Sales.xlsx")
     df['transaction_date'] = pd.to_datetime(df['transaction_date'])
@@ -48,7 +48,7 @@ st.markdown(
 if menu == "📊 Dashboard":
     st.title("☕ Coffee Shop Sales Dashboard ☕")
     image = Image.open('coffe.jpg')
-    st.image(image, use_container_width=True)
+    st.image(image, use_column_width=True)
 
     # Filter lokasi
     locations = df['store_location'].unique()
@@ -283,11 +283,19 @@ elif menu == "🔮 Prediksi SARIMA":
 
 elif menu == "📌 Rekomendasi Produk":
     st.title("📌 Rekomendasi Produk")
+
+    locations = df['store_location'].unique()
+    selected_locations = st.sidebar.multiselect(
+        "Pilih Lokasi Toko:",
+        options=locations,
+        default=locations
+    )
+
     selected_product_type = st.sidebar.selectbox("Pilih Kategori Produk:", df['product_type'].unique())
     filtered_data = df[df['product_type'] == selected_product_type]
     product_detail_qty = filtered_data.groupby('product_detail')['transaction_qty'].sum().reset_index()
     sorted_product_detail = product_detail_qty.sort_values(by='transaction_qty', ascending=False)
-    
+
     st.subheader("🔝 Produk Terlaris")
     for _, row in sorted_product_detail.head(3).iterrows():
         st.write(f"📦 *{row['product_detail']}* - {row['transaction_qty']} terjual")
@@ -305,7 +313,7 @@ elif menu == "🤝 Sistem Rekomendasi Produk Kopi":
         ("Dataset Astoria", "Dataset Hell's KItchen", "Dataset LowerManhattan")
     )
 
-    @st.cache_data
+    @st.cache
     def load_assoc_data(dataset_option):
         if dataset_option == "Dataset Astoria":
             df = pd.read_excel('dataset_astoria_updated.xlsx')
@@ -339,9 +347,9 @@ elif menu == "🤝 Sistem Rekomendasi Produk Kopi":
     # ============================= SISTEM REKOMENDASI =============================
     st.subheader("🎯 Rekomendasi Produk")
 
-selected_products = st.text_input("Masukkan produk yang dibeli (pisahkan dengan koma):")
-if selected_products:
-    selected_products = {p.strip() for p in selected_products.split(',')}
+    selected_products = st.text_input("Masukkan produk yang dibeli (pisahkan dengan koma):")
+    if selected_products:
+        selected_products = {p.strip() for p in selected_products.split(',')}
     recommendations = {}  # Gunakan dictionary untuk menyimpan skor
 
     for _, row in rules.iterrows():
