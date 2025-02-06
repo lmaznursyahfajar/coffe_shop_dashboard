@@ -11,7 +11,7 @@ from mlxtend.frequent_patterns import apriori, association_rules
 
 st.set_page_config(page_title="Coffee Shop Sales Dashboard", layout="wide")
 # Load Data (hanya sekali)
-@st.cache_data
+@st.cache
 def load_data():
     df = pd.read_excel("Coffee Shop Sales.xlsx")
     df['transaction_date'] = pd.to_datetime(df['transaction_date'])
@@ -22,13 +22,33 @@ df = load_data()
 
 # Sidebar Navigation
 menu = st.selectbox("Menu:", ["📊 Dashboard", "🔮 Prediksi SARIMA", "📌 Rekomendasi Produk", "🤝 Sistem Rekomendasi Produk Kopi"])
+# Mapping gambar latar belakang berdasarkan menu
+background_images = {
+    "📊 Dashboard": "background_dashboard.jpg",
+    "🔮 Prediksi SARIMA": "background_sarima.jpg",
+    "📌 Rekomendasi Produk": "background_rekomendasi.jpg",
+    "🤝 Sistem Rekomendasi Produk Kopi": "background_asosiasi.jpg"
+}
+
+# Terapkan CSS untuk latar belakang
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background: url("{background_images[menu]}") no-repeat center center fixed;
+        background-size: cover;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 #######==================================DASHBOARD=======================================================
 
 if menu == "📊 Dashboard":
     st.title("☕ Coffee Shop Sales Dashboard ☕")
     image = Image.open('coffe.jpg')
-    st.image(image, use_container_width=True)
+    st.image(image, use_column_width=True)
 
     # Filter lokasi
     locations = df['store_location'].unique()
@@ -277,23 +297,35 @@ elif menu == "📌 Rekomendasi Produk":
         st.write(f"📦 *{row['product_detail']}* - {row['transaction_qty']} terjual")
 
 elif menu == "🤝 Sistem Rekomendasi Produk Kopi":
-    st.title("🤝 Sistem Rekomendasi Produk dengan Apriori")
-    
-    @st.cache_data
-    def load_assoc_data():
-        df = pd.read_excel('dataset_astoria_updated.xlsx')
+    st.title("🤝 Analisis Asosiasi dengan Apriori")
+
+    # ============================= PILIHAN DATASET =============================
+    dataset_option = st.selectbox(
+        "Pilih Dataset",
+        ("Dataset Astoria", "Dataset Hell's KItchen", "Dataset LowerManhattan")
+    )
+
+    @st.cache
+    def load_assoc_data(dataset_option):
+        if dataset_option == "Dataset Astoria":
+            df = pd.read_excel('dataset_astoria_updated.xlsx')
+        elif dataset_option == "dataset_hellskitchen":
+            df = pd.read_excel('dataset_hellskitchen.xlsx')
+        else:
+            df = pd.read_excel('dataset_lowermh.xlsx')
+        
         df.dropna(subset=['new_invoice_id'], inplace=True)
         df['new_invoice_id'] = df['new_invoice_id'].astype(str)
         df = df[~df['new_invoice_id'].str.contains('C')]
         return df
 
-    df_assoc = load_assoc_data()
+    df_assoc = load_assoc_data(dataset_option)
 
     # ============================= PROSES APRIORI =============================
     basket = df_assoc.groupby(['new_invoice_id', 'product_detail'])['transaction_qty'].sum().unstack().fillna(0)
     basket_sets = basket.applymap(lambda x: 1 if x > 0 else 0)
 
-    min_support = st.slider("🔧 Minimum Support", 0.01, 0.1, 0.025, 0.005)
+    min_support = st.slider("🔧 Minimum Support", 0.01, 0.1, 0.05, 0.005)
     frequent_itemsets = apriori(basket_sets, min_support=min_support, use_colnames=True)
     rules = association_rules(frequent_itemsets, metric='lift', min_threshold=0.7)
 
@@ -307,22 +339,30 @@ elif menu == "🤝 Sistem Rekomendasi Produk Kopi":
     # ============================= SISTEM REKOMENDASI =============================
     st.subheader("🎯 Rekomendasi Produk")
 
-    selected_products = st.text_input("Masukkan produk yang dibeli (pisahkan dengan koma):")
-    if selected_products:
-        selected_products = {p.strip() for p in selected_products.split(',')}
-        recommendations = set()
+selected_products = st.text_input("Masukkan produk yang dibeli (pisahkan dengan koma):")
+if selected_products:
+    selected_products = {p.strip() for p in selected_products.split(',')}
+    recommendations = {}  # Gunakan dictionary untuk menyimpan skor
 
-        for _, row in rules.iterrows():
-            antecedents = set(row['antecedents'])
-            consequents = set(row['consequents'])
-            if antecedents & selected_products:
-                recommendations.update(consequents)
+    for _, row in rules.iterrows():
+        antecedents = set(row['antecedents'])
+        consequents = set(row['consequents'])
+        
+        # Cek apakah produk yang dipilih ada di antecedents
+        if antecedents & selected_products:
+            for product in consequents:
+                # Tambahkan skor confidence untuk setiap produk rekomendasi
+                recommendations[product] = recommendations.get(product, 0) + row['confidence']
 
-        recommendations -= selected_products  # Hindari merekomendasikan produk yang sudah dibeli
+    # Hindari merekomendasikan produk yang sudah dibeli
+    recommendations = {prod: score for prod, score in recommendations.items() if prod not in selected_products}
 
-        if recommendations:
-            st.success("✅ Produk yang direkomendasikan untuk Anda:")
-            for product in recommendations:
-                st.write(f"🔹 **{product}**")
-        else:
-            st.warning("⚠️ Tidak ada rekomendasi yang cocok dengan produk yang dipilih.")
+    # Urutkan rekomendasi berdasarkan skor confidence (descending) dan ambil 3 teratas
+    top_recommendations = sorted(recommendations.items(), key=lambda x: x[1], reverse=True)[:3]
+
+    if top_recommendations:
+        st.success("✅ Produk yang direkomendasikan untuk Anda:")
+        for product, score in top_recommendations:
+            st.write(f"🔹 **{product}** (Confidence: {score:.2f})")
+    else:
+        st.warning("⚠️ Tidak ada rekomendasi yang cocok dengan produk yang dipilih.")
