@@ -21,7 +21,7 @@ df = load_data()
 
 
 # Sidebar Navigation
-menu = st.sidebar("Menu:", ["📊 Dashboard", "🔮 Prediksi SARIMA", "📌 Rekomendasi Produk", "🤝 Sistem Rekomendasi Produk Kopi"])
+menu = st.selectbox("Menu:", ["📊 Dashboard", "🔮 Prediksi SARIMA", "📌 Rekomendasi Produk", "🤝 Sistem Rekomendasi Produk Kopi"])
 # Mapping gambar latar belakang berdasarkan menu
 background_images = {
     "📊 Dashboard": "background_dashboard.jpg",
